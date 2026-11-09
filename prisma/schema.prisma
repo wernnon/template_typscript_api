@@ -1,0 +1,54 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  ADMIN
+  USER
+}
+
+model Usuario {
+  id           Int        @id @default(autoincrement())
+  nome         String     @db.VarChar(150)
+  email        String     @unique @db.VarChar(150)
+  senha_hash   String
+  role         Role       @default(USER)
+  ativo        Boolean    @default(true)
+  criado_em    DateTime   @default(now())
+  atualizado_em DateTime  @updatedAt
+
+  produtos     Produto[]
+  auditorias   Auditoria[]
+
+  @@map("usuarios")
+}
+
+model Produto {
+  id           Int      @id @default(autoincrement())
+  nome         String   @db.VarChar(150)
+  descricao    String?
+  preco        Decimal  @db.Decimal(10, 2)
+  quantidade   Int      @default(0)
+  id_usuario   Int?
+  usuario      Usuario? @relation(fields: [id_usuario], references: [id], onDelete: SetNull)
+  criado_em    DateTime @default(now())
+
+  @@map("produtos")
+}
+
+model Auditoria {
+  id         Int      @id @default(autoincrement())
+  acao       String
+  entidade   String
+  detalhes   Json?
+  id_usuario Int?
+  usuario    Usuario? @relation(fields: [id_usuario], references: [id], onDelete: SetNull)
+  criado_em  DateTime @default(now())
+
+  @@map("auditorias")
+}
